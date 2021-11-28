@@ -1,0 +1,218 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+<div class="container row " style="margin-top:60px !important">
+    <div class="col-md-12">
+        <div class="form-group">
+            <label for="ConnectionString">Connection String:</label>
+            <input type="text" class="form-control" id="ConnectionString" value="Data Source=(localdb)\ProjectsV13;Initial Catalog=Test;Integrated Security=True">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="Schema">Schema:</label>
+            <input type="text" class="form-control" id="Schema" value="dbo">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="TableName">Table Name:</label>
+            <input type="text" class="form-control" id="TableName" value="TBL_COMPANY">
+        </div>
+    </div>
+    <button type="button" class="btn btn-primary" id="generate" onclick="GenerateScript()">Generate Script</button>
+</div>
+
+<div class="container">
+    <h2>Dynamic Tabs</h2>
+    <ul class="nav nav-tabs">
+        <li class="active"><a data-toggle="tab" href="#home">Model Class</a></li>
+        <li><a data-toggle="tab" href="#menu1">Action Part</a></li>
+        <li><a data-toggle="tab" href="#menu2">List Part</a></li>
+        <li><a data-toggle="tab" href="#menu3">Repo Part</a></li>
+        <li><a data-toggle="tab" href="#menu4">SP</a></li>
+        <li><a data-toggle="tab" href="#menu5">View Div</a></li>
+    </ul>
+    <div class="tab-content">
+        <div id="home" class="tab-pane fade in active">
+            <div class="col-md-12">
+                <h2>Model Class</h2>
+                <button onclick="CBeautify()">Beautify C#</button>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="col-12" id="modelclass">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="menu1" class="tab-pane fade">
+            <div class="col-md-12">
+                <h2>Action Part </h2>
+                <button onclick="CBeautify()">Beautify C#</button>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="col-12" id="validateModel">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="menu2" class="tab-pane fade">
+            <div class="col-md-12">
+                <h2>List Part </h2>
+                <button onclick="CBeautify()">Beautify C#</button>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="col-12" id="list">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="menu3" class="tab-pane fade">
+            <div class="col-md-12">
+                <h2>Repo Part </h2>
+                <button onclick="CBeautify()">Beautify C#</button>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="col-12" id="repo">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="menu4" class="tab-pane fade">
+            <div class="col-md-12">
+                <h2>SP</h2>
+                <button onclick="SQLBeautify()">Sql Beautify</button>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="col-12" id="paragraph">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="menu5" class="tab-pane fade">
+            <div class="col-md-12">
+                <h2>View Div</h2>
+                <button onclick="BeautifyHTMLCODE()">Beautify HTML CODE</button>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <textarea id="View" class="col-12" rows="50" cols="140"></textarea>                       
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function BeautifyHTMLCODE() {
+        window.open("https://codebeautify.org/htmlviewer");
+    }
+    function SQLBeautify() {
+        window.open("https://www.red-gate.com/website/sql-formatter");
+    }
+    function CBeautify() {
+        window.open("https://codebeautify.org/csharpviewer");
+    }
+    function GenerateScript() {      
+        var ConnectionString = $("#ConnectionString").val();
+        var Schema = $("#Schema").val();
+        var TableName = $("#TableName").val();
+        if (ConnectionString == "" || Schema == "" || TableName == "") {
+            alert('Fill All Data');
+            return;
+        }
+        $.ajax({
+            data: {                 
+                ConnectionString: ConnectionString,
+                Schema: Schema,
+                TableName: TableName
+            },
+            type: "POST",
+            url: "/Home/load",
+            success: function (response) {               
+                var cls = JSON.parse(response[0].a);
+                var clstext = "";
+                for (c = 0; c < cls.length; c++) {
+                    clstext = clstext + cls[c].Column1 + "<br>"
+                }
+                var sp = JSON.parse(response[0].x);
+                document.getElementById('paragraph').innerHTML = sp[0].Column1;
+                var vd = JSON.parse(response[0].y);
+                var vdtext = "";
+                vdtext = vdtext + "[HttpPost]" + "<br>";
+                vdtext = vdtext + "[ValidateAntiForgeryToken]" + "<br>";
+                vdtext = vdtext + "public ActionResult ActionName(ModelName model) {" + "<br>";
+                vdtext = vdtext + "if (ModelState.IsValid) {" + "<br>";
+                vdtext = vdtext + " ModelNameCommon common = new ModelNameCommon();" + "<br>";
+                for (c = 0; c < vd.length; c++) {
+                    vdtext = vdtext + vd[c].Column1 + "<br>";
+                }
+                vdtext = vdtext + "MYRequestCommon requestCommon = new MYRequestCommon();" + "<br>";
+                vdtext = vdtext + "MYRequestCommon objReq = new MYRequestCommon();" + "<br>";
+                vdtext = vdtext + "objReq.RequestedMethod = RequestType.InsertUpdate;" + "<br>";
+                vdtext = vdtext + "objReq.RequestCommon = common;" + "<br>";
+                vdtext = vdtext + "objReq.RequestedBy = StaticData.GetUser();" + "<br>";
+                vdtext = vdtext + "var response = IsubDistributor.Request(objReq);" + "<br>";
+                vdtext = vdtext + "if (response.Result.ErrorCode == 1) {" + "<br>";
+                vdtext = vdtext + "ModelState.AddModelError('',response.Result.Message);" + "<br>";
+                vdtext = vdtext + "StaticData.SetMessageInSession(new DbResponse { ErrorCode = 1, Message = response.Result.Message });" + "<br>";
+                vdtext = vdtext + "return View(model);" + "<br>";
+                vdtext = vdtext + "}" + "<br>" + "if (response.Result.ErrorCode == 0) {" + "<br>";;
+                vdtext = vdtext + " StaticData.SetMessageInSession(new DbResponse { ErrorCode = 0, Message = response.Result.Message });" + "<br>";
+                vdtext = vdtext + "return RedirectToAction('actionName', 'controller', new { if any url link });" + "<br>";
+                vdtext = vdtext + "}" + "<br>" + "}" + "<br>" + "else" + "<br>" + "{" + "<br>";
+                vdtext = vdtext + " foreach(ModelState modelstate in ViewData.ModelState.Values)" + "<br>";
+                vdtext = vdtext + "{" + "<br>" + "foreach(ModelError error in modelstate.Errors)" + "<br>";;
+                vdtext = vdtext + "{" + "<br>" + " StaticData.SetMessageInSession(new DbResponse { ErrorCode = 1, Message = error.ErrorMessage });" + "<br>";
+                vdtext = vdtext + "return View(model);" + "<br>" + "}" + "<br>" + "}" + "<br>" + "}" + "<br>";
+                vdtext = vdtext + "return View(model);" + "<br>" + "}" + "<br>";
+                var rpo = JSON.parse(response[0].b);
+                var repotext = "";
+                repotext = repotext + "public MYResponseCommon repoName(MYRequestCommon req)" + "<br>" + "{" + "<br>";
+                repotext = repotext + " CommonModelName objData = (CommonModelName)req.RequestCommon;" + "<br>";
+                repotext = repotext + ' var sql = "EXEC [Dbo].[SpaName]"; <br> sql += "@@Flag = " + dao.FilterString(req.RequestedFlag); <br>';
+                for (c = 0; c < rpo.length; c++) {
+                    repotext = repotext + rpo[c].Column1 + "<br>";
+                }
+                repotext = repotext + "response.Result = dao.ParseDbResponse(sql);" + "<br>";
+                repotext = repotext + "return response;" + "<br>";
+                repotext = repotext + "}" + "<br>";
+                document.getElementById('validateModel').innerHTML = vdtext;
+                document.getElementById('modelclass').innerHTML = clstext;
+                document.getElementById('repo').innerHTML = repotext;
+                var list = JSON.parse(response[0].c);
+                var lsttext = "";
+                lsttext = lsttext + " var dts = dao.ExecuteDataset(sql); <br> var dt = dts.Tables[0]; <br>  List ModelName  listData = new List ModelName (); <br> if (null != dt) <br>{<br>foreach (DataRow item in dt.Rows) <br>{ <br>ModelName lst = new ModelName(); <br>";
+                for (c = 0; c < list.length; c++) {
+                    lsttext = lsttext + list[c].Column1 + "<br>"
+                }
+                lsttext = lsttext + " listData.Add(lst);<br>};<br>};<br>response.ModelNameList = menu;<br> return response;<br>";
+                document.getElementById('list').innerHTML = lsttext;
+
+                var view = JSON.parse(response[0].d);
+                var viewTwst = "";
+                viewTwst = viewTwst + "<div class=\"col-12 mt-5\"><div class=\"card\"><div class=\"card-header\"><h5 class=\"card-title\">Title</h5></div><div class=\"card-body\"><div class=\"col-md-12\"><div class=\"row\">";
+                for (d = 0; d < view.length; d++) {
+                    viewTwst = viewTwst + view[d].Column1;
+                }
+                viewTwst = viewTwst + "</div></div></div></div></div>";             
+                document.getElementById('View').innerHTML = viewTwst;
+
+            },
+            failure: function (response) {
+                console.log(response)
+                alert('error');
+            }
+        });
+    }
+</script>
